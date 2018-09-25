@@ -1,5 +1,3 @@
-# Computer Animation HW
-
 ### Build
 
 ```bash
