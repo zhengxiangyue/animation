@@ -42,7 +42,7 @@ Move the object forward
 
 Move the object backward
 
-#### X, Y, Z 
+#### (Shift + ) X, Y, Z 
 
 Rotate the object 
 
