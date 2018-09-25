@@ -1,8 +1,6 @@
 # Computer Animation HW
 
-![readme](./static/readme.png)
-
-##### Build
+### Build
 
 ```bash
 $ git clone https://github.com/Zhengxiangyue/animation.git
@@ -18,40 +16,41 @@ $ make
 $ ./playground
 ```
 
-##### Basic keys
+### Basic keys
 
-###### W, A, S, D and mouse
+#### W, A, S, D and mouse
 
 Controll the camera position
 
-###### N
+#### N
 
 Change mode, when red object occurs, you are in "Edit mode", otherwise you are in "View mode"
 
-##### Edit mode keys
+### Edit mode keys
 
-###### M
+#### M
 
  Change the modifying rigid object, the modifying object is shown in red
 
-###### P
+#### P
 
 Set the current location a key point, a small square will appear
 
-###### UP
+#### UP
 
 Move the object forward
 
-###### DOWN
+#### DOWN
 
 Move the object backward
 
-###### X, Y, Z 
+#### X, Y, Z 
 
 Rotate the object 
 
-##### Ohter
+### Ohter
 
 Euler angles, quaternian, Catmul-Rom or B-splines is changed in code
 
 [Demo](https://zhengxiangyue.github.io/animation/) 
+![readme](./static/readme.png)
