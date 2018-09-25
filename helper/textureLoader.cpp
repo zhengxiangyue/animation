@@ -1,3 +1,4 @@
+#include <iostream>
 #include "textureLoader.h"
 
 GLuint loadBMP_custom(const char * imagepath){
@@ -15,9 +16,9 @@ GLuint loadBMP_custom(const char * imagepath){
 	// Open the file
 	FILE * file = fopen(imagepath,"rb");
 	if (!file){
-		printf("%s could not be opened. Are you in the right directory ? Don't forget to read the FAQ !\n", imagepath);
-		getchar();
-		return 0;
+        std::cout << "File not found, the exe file should locate the same as these files" << std::endl;
+//		printf("%s could not be opened. Are you in the right directory ? Don't forget to read the FAQ !\n", imagepath);
+		exit(1);
 	}
 
 	// Read the header, i.e. the 54 first bytes
@@ -26,13 +27,13 @@ GLuint loadBMP_custom(const char * imagepath){
 	if ( fread(header, 1, 54, file)!=54 ){ 
 		printf("Not a correct BMP file\n");
 		fclose(file);
-		return 0;
+        exit(1);
 	}
 	// A BMP files always begins with "BM"
 	if ( header[0]!='B' || header[1]!='M' ){
 		printf("Not a correct BMP file\n");
 		fclose(file);
-		return 0;
+        exit(1);
 	}
 	// Make sure this is a 24bpp file
 	if ( *(int*)&(header[0x1E])!=0  )         {printf("Not a correct BMP file\n");    fclose(file); return 0;}
@@ -126,8 +127,8 @@ GLuint loadDDS(const char * imagepath){
 	/* try to open the file */ 
 	fp = fopen(imagepath, "rb"); 
 	if (fp == NULL){
-		printf("%s could not be opened. Are you in the right directory ? Don't forget to read the FAQ !\n", imagepath); getchar(); 
-		return 0;
+	    std::cout << "File not found" << std::endl;
+        exit(1);
 	}
    
 	/* verify the type of file */ 

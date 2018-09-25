@@ -1,7 +1,6 @@
 //
 // Create by Zheng Xiangyue
 //
-#include <glm/glm.hpp>
 #include <stdio.h>
 #include <stdlib.h>
 #include <vector>
@@ -10,12 +9,9 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-GLFWwindow *window;
-
-// Include GLM
-
 using namespace glm;
+
+GLFWwindow *window;
 
 #include "helper/shader.h"
 #include "helper/textureLoader.h"
