@@ -1,17 +1,17 @@
 ### Build
 
 ```bash
-$ git clone https://github.com/Zhengxiangyue/animation.git
-$ cd animation/runtime
-$ cmake ..
+git clone https://github.com/Zhengxiangyue/animation.git
+cd animation/runtime
+cmake ..
 ```
 
 ```bash
-$ make
+make
 ```
 
 ```bash
-$ ./playground
+./playground
 ```
 
 ### Basic keys
