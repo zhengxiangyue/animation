@@ -1,5 +1,5 @@
 //
-// Create by Zheng Xiangyue
+// Create by zhengxiangyue
 //
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,9 +9,6 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
-using namespace glm;
-
-GLFWwindow *window;
 
 #include "helper/shader.h"
 #include "helper/textureLoader.h"
@@ -21,8 +18,23 @@ GLFWwindow *window;
 #include "helper/VertexBuffer.h"
 #include "helper/IndexBuffer.h"
 
-// using quaternian or eurler angle
+// todo: change at runtime
 #define USING_QUAT true
+#define CONTROLL_POINT_TYPE 0
+
+using namespace glm;
+
+GLFWwindow *window;
+
+// mode 0: edit mode, 1: view mode
+int mode = 1;
+
+// current modifying objef
+// it's wired since all_object declared in main...
+int selected_object_index = 0;
+
+// record all controll points so as to now show them in the specific situation
+std::unordered_set<int> controll_points_index;
 
 /**
  * Get a quaternian such that the object roll {degree} around the {axis}
@@ -51,7 +63,7 @@ vec4 getQuatFromIntuition(float degree, vec3 axis) {
 vec4 quatMultiply(vec4 q1, vec4 q2) {
     float w1 = q1.w, w2 = q2.w;
     vec3 v1(q1.x, q1.y, q1.z), v2(q2.x, q2.y, q2.z);
-    float w = q1.w * q2.w - (q1.x * q2.x + q1.y* q2.y + q1.z * q2.z);
+    float w = q1.w * q2.w - (q1.x * q2.x + q1.y * q2.y + q1.z * q2.z);
     vec3 v1xv2(q1.y * q2.z - q1.z * q2.y, q1.z * q2.x - q1.x * q2.z, q1.x * q2.y - q1.y * q2.x);
     vec3 v = w1 * v2 + w2 * v1 + v1xv2;
     return vec4(v.x, v.y, v.z, w);
@@ -106,15 +118,15 @@ mat4 quaternianToRotation(vec4 vec) {
     float x = vec.x, y = vec.y, z = vec.z, w = vec.w;
 
     return transpose(mat4({
-                        {1 - 2 * y * y - 2 * z * z, 2 * x * y - 2 * w * z, 2 * x * z + 2 * w * y},
-                        {2 * x * y + 2 * w * z, 1 - 2 * x * x - 2 * z * z, 2 * y * z - 2 * w * x},
-                        {2 * x * z - 2 * w * y, 2 * y * z + 2 * w * x, 1 - 2 * x * x - 2 * y * y},
-                }));
+                                  {1 - 2 * y * y - 2 * z * z, 2 * x * y - 2 * w * z,     2 * x * z + 2 * w * y},
+                                  {2 * x * y + 2 * w * z,     1 - 2 * x * x - 2 * z * z, 2 * y * z - 2 * w * x},
+                                  {2 * x * z - 2 * w * y,     2 * y * z + 2 * w * x,     1 - 2 * x * x - 2 * y * y},
+                          }));
 }
 
 
 /**
- *
+ * scene object
  */
 class polygon_object {
 public:
@@ -144,12 +156,15 @@ public:
     float eurler_x, eurler_y, eurler_z;
     vec4 current_quat;
 
+    // controll point type
+    int controll_point_type = 0;
+
     polygon_object(
             const char *path,
             vec3 position,
             float scale = 1.0,
             const char *texture_path = ""
-            ) {
+    ) {
         loadOBJ(path, vertices, uvs, normals, scale);
         indexVBO(vertices, uvs, normals, indices, indexed_vertices, indexed_uvs, indexed_normals);
 
@@ -190,16 +205,19 @@ public:
  * @param express
  * @return
  */
-template <typename _type>
+template<typename _type>
 _type getInterpolateExpress(float time, std::vector<_type> express) {
     int start_index = floor(time);
     time = fmod(time, 1.0);
-    return express[start_index] + time * (express[start_index+1] - express[start_index]);
+    return express[start_index] + time * (express[start_index + 1] - express[start_index]);
 }
 
 /**
  * Cubic interpolation.
  * 4 controll_points determines one curve
+ *
+ * if there are 4 controll points, time belongs to 0 and 1
+ * if there are 5 controll points, time belongs to 0 and 2
  *
  * @param time
  * @param M
@@ -207,19 +225,15 @@ _type getInterpolateExpress(float time, std::vector<_type> express) {
  * @return
  */
 mat4 getInterpolateTranslationMatrix(float time, mat4 M, std::vector<vec4> controll_points) {
-    // if there are 4 controll points, time belongs to 0 and 1
-    // if there are 5 controll points, time belongs to 0 and 2
-    int start_index = floor(time);
 
-    if (start_index >= controll_points.size() - 3) {
+    int start_index = floor(time);
+    if (start_index >= controll_points.size() - 3)
         return mat4(1.0);
-    }
 
     time = fmod(time, 1.0);
-
     vec4 position = vec4(time * time * time, time * time, time, 1)
-            * M
-            * transpose(mat4(controll_points[start_index], controll_points[start_index+1], controll_points[start_index+2], controll_points[start_index+3]));
+                    * M
+                    * transpose(mat4(controll_points[start_index], controll_points[start_index + 1], controll_points[start_index + 2], controll_points[start_index + 3]));
     return transpose(mat4({
                                   {1.0, 0.0, 0.0, position.x},
                                   {0.0, 1.0, 0.0, position.y},
@@ -227,11 +241,6 @@ mat4 getInterpolateTranslationMatrix(float time, mat4 M, std::vector<vec4> contr
                                   {0.0, 0.0, 0.0, 1.0},
                           }));
 }
-
-// mode 0: edit mode, 1: view mode
-int mode = 1;
-int selected_object_index = 0;
-std::unordered_set<int> controll_points_index;
 
 int main(void) {
     // Initialise GLFW
@@ -284,7 +293,7 @@ int main(void) {
     GLuint programID = LoadShaders("StandardShading.vertexshader", "StandardShading.fragmentshader");
 
     // Get a handle for our "myTextureSampler" uniform
-    GLuint TextureID  = glGetUniformLocation(programID, "myTextureSampler");
+    GLuint TextureID = glGetUniformLocation(programID, "myTextureSampler");
 
     // Get a handle for our "MVP" uniform
     GLuint MatrixID = glGetUniformLocation(programID, "MVP");
@@ -305,9 +314,9 @@ int main(void) {
     // For speed computation
     double lastTime = glfwGetTime();
     double lastFrameTime = lastTime,
-    lastChangeMainObjectTime = lastTime,
-    lastChangeMode = lastTime,
-    lastAddControllPoint = lastTime;
+            lastChangeMainObjectTime = lastTime,
+            lastChangeMode = lastTime,
+            lastAddControllPoint = lastTime;
     int nbFrames = 0;
 
     do {
@@ -337,9 +346,9 @@ int main(void) {
         // modify mode
         if (mode == 0) {
             // When press M, change the main object
-            if (glfwGetKey( window, GLFW_KEY_M ) == GLFW_PRESS){
+            if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS) {
                 if (currentTime - lastChangeMainObjectTime >= 0.2) {
-                    while(true) {
+                    while (true) {
                         selected_object_index += 1;
                         if (controll_points_index.find(selected_object_index) == controll_points_index.end())
                             break;
@@ -351,19 +360,20 @@ int main(void) {
             }
 
             // When press UP, move upword(y increase) upword
-            if (glfwGetKey( window, GLFW_KEY_UP ) == GLFW_PRESS){
+            if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
                 auto rotation = USING_QUAT ? quaternianToRotation(all_objects[selected_object_index].current_quat)
-                        : eulerYXZtoRotation(vec3(all_objects[selected_object_index].eurler_x, all_objects[selected_object_index].eurler_y, all_objects[selected_object_index].eurler_z));
+                                           : eulerYXZtoRotation(
+                                vec3(all_objects[selected_object_index].eurler_x, all_objects[selected_object_index].eurler_y, all_objects[selected_object_index].eurler_z));
                 auto direc = rotation * vec4(0.0, 0.0, 1.0, 1.0);
                 all_objects[selected_object_index].TranslationMatrix[3][0] += 0.2 * direc.x;
                 all_objects[selected_object_index].TranslationMatrix[3][1] += 0.2 * direc.y;
                 all_objects[selected_object_index].TranslationMatrix[3][2] += 0.2 * direc.z;
             }
             // When press Down, move downword(y decrease) downword
-            if (glfwGetKey( window, GLFW_KEY_DOWN ) == GLFW_PRESS){
+            if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
                 auto rotation = USING_QUAT
-                        ? quaternianToRotation(all_objects[selected_object_index].current_quat)
-                        : eulerYXZtoRotation(vec3(all_objects[selected_object_index].eurler_x, all_objects[selected_object_index].eurler_y, all_objects[selected_object_index].eurler_z));
+                                ? quaternianToRotation(all_objects[selected_object_index].current_quat)
+                                : eulerYXZtoRotation(vec3(all_objects[selected_object_index].eurler_x, all_objects[selected_object_index].eurler_y, all_objects[selected_object_index].eurler_z));
                 auto direc = rotation * vec4(0.0, 0.0, 1.0, 1.0);
                 all_objects[selected_object_index].TranslationMatrix[3][0] -= 0.2 * direc.x;
                 all_objects[selected_object_index].TranslationMatrix[3][1] -= 0.2 * direc.y;
@@ -371,8 +381,8 @@ int main(void) {
             }
 
             // When press z,
-            if (glfwGetKey( window, GLFW_KEY_Z ) == GLFW_PRESS) {
-                auto angle = (glfwGetKey( window, GLFW_KEY_LEFT_SHIFT ) == GLFW_PRESS ? -3.0 : 3.0);
+            if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS) {
+                auto angle = (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ? -3.0 : 3.0);
                 if (USING_QUAT) {
                     all_objects[selected_object_index].current_quat = quatMultiply(
                             all_objects[selected_object_index].current_quat, getQuatFromIntuition(angle, vec3(0.0, 0.0, 1.0)));
@@ -382,8 +392,8 @@ int main(void) {
             }
 
             // When press y,
-            if (glfwGetKey( window, GLFW_KEY_Y ) == GLFW_PRESS) {
-                auto angle = (glfwGetKey( window, GLFW_KEY_LEFT_SHIFT ) == GLFW_PRESS ? -3.0 : 3.0);
+            if (glfwGetKey(window, GLFW_KEY_Y) == GLFW_PRESS) {
+                auto angle = (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ? -3.0 : 3.0);
                 if (USING_QUAT) {
                     all_objects[selected_object_index].current_quat = quatMultiply(
                             all_objects[selected_object_index].current_quat, getQuatFromIntuition(angle, vec3(0.0, 1.0, 0.0)));
@@ -392,8 +402,8 @@ int main(void) {
                 }
             }
             // When press x,
-            if (glfwGetKey( window, GLFW_KEY_X ) == GLFW_PRESS) {
-                auto angle = (glfwGetKey( window, GLFW_KEY_LEFT_SHIFT ) == GLFW_PRESS ? -3.0 : 3.0);
+            if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS) {
+                auto angle = (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ? -3.0 : 3.0);
                 if (USING_QUAT) {
                     all_objects[selected_object_index].current_quat = quatMultiply(
                             all_objects[selected_object_index].current_quat, getQuatFromIntuition(angle, vec3(1.0, 0.0, 0.0)));
@@ -403,15 +413,19 @@ int main(void) {
             }
 
             // When press p, set position
-            if (glfwGetKey( window, GLFW_KEY_P )) {
+            if (glfwGetKey(window, GLFW_KEY_P)) {
 
                 if (currentTime - lastAddControllPoint > 0.5) {
-                    all_objects[selected_object_index].controll_points.push_back(vec4(all_objects[selected_object_index].TranslationMatrix[3][0], all_objects[selected_object_index].TranslationMatrix[3][1], all_objects[selected_object_index].TranslationMatrix[3][2], 1.0));
-                    all_objects.push_back(polygon_object("model/square.obj", {all_objects[selected_object_index].TranslationMatrix[3][0], all_objects[selected_object_index].TranslationMatrix[3][1], all_objects[selected_object_index].TranslationMatrix[3][2]}, 0.05, "uvtemplate.bmp"));
+                    all_objects[selected_object_index].controll_points.emplace_back(
+                            vec4(all_objects[selected_object_index].TranslationMatrix[3][0], all_objects[selected_object_index].TranslationMatrix[3][1],
+                                 all_objects[selected_object_index].TranslationMatrix[3][2], 1.0));
+                    all_objects.push_back(polygon_object("model/square.obj", {all_objects[selected_object_index].TranslationMatrix[3][0], all_objects[selected_object_index].TranslationMatrix[3][1],
+                                                                              all_objects[selected_object_index].TranslationMatrix[3][2]}, 0.05, "uvtemplate.bmp"));
                     all_objects[selected_object_index].controll_points_index.insert(all_objects.size() - 1);
                     controll_points_index.insert(all_objects.size() - 1);
 
-                    all_objects[selected_object_index].key_eurlers.push_back(vec3(all_objects[selected_object_index].eurler_x, all_objects[selected_object_index].eurler_y, all_objects[selected_object_index].eurler_z));
+                    all_objects[selected_object_index].key_eurlers.emplace_back(
+                            vec3(all_objects[selected_object_index].eurler_x, all_objects[selected_object_index].eurler_y, all_objects[selected_object_index].eurler_z));
                     all_objects[selected_object_index].key_quaternians.push_back(all_objects[selected_object_index].current_quat);
                 }
                 lastAddControllPoint = currentTime;
@@ -420,7 +434,8 @@ int main(void) {
 
             for (int i = 0; i < all_objects.size(); ++i) {
 
-                if (controll_points_index.find(i) != controll_points_index.end() && all_objects[selected_object_index].controll_points_index.find(i) == all_objects[selected_object_index].controll_points_index.end()) {
+                if (controll_points_index.find(i) != controll_points_index.end() &&
+                    all_objects[selected_object_index].controll_points_index.find(i) == all_objects[selected_object_index].controll_points_index.end()) {
                     continue;
                 }
 
@@ -505,7 +520,7 @@ int main(void) {
                     if (obj.key_quaternians.size() >= 2) {
                         float each_rotation_duration = 2.5;
                         auto _keys = obj.key_quaternians;
-                        _keys.erase(_keys.begin()), _keys.erase(_keys.end()-1);
+                        _keys.erase(_keys.begin()), _keys.erase(_keys.end() - 1);
                         float current_rotation_time = fmod(currentTime, each_rotation_duration * (_keys.size() - 1)) / each_rotation_duration;
                         obj.RotationMatrix = quaternianToRotation(getInterpolateExpress<vec4>(current_rotation_time, _keys));
                     }
@@ -524,15 +539,27 @@ int main(void) {
                     float each_path_duration = 2.5;
                     // use 2.5 s to pass each four controll point
                     float current_path_time = fmod(currentTime, each_path_duration * (obj.controll_points.size() - 3)) / each_path_duration;
-                    auto M = transpose(mat4({
-                                                    {-0.5, 1.5,  -1.5, 0.5},
-                                                    {1.0,  -2.5, 2.0,  -0.5},
-                                                    {-0.5, 0.0,  0.5,  0.0},
-                                                    {0.0,  1.0,  0.0,  0.0}
-                                            }));
+
+                    std::vector<mat4> blending_matrices({
+                                                                // Catmull-Rom
+                                                                transpose(mat4({
+                                                                                       {-0.5, 1.5,  -1.5, 0.5},
+                                                                                       {1.0,  -2.5, 2.0,  -0.5},
+                                                                                       {-0.5, 0.0,  0.5,  0.0},
+                                                                                       {0.0,  1.0,  0.0,  0.0}
+                                                                               })),
+                                                                // B spline
+                                                                transpose(mat4({
+                                                                                       {-1.0 / 6.0, 3.0 / 6.0,  -3.0 / 6.0, 1.0 / 6.0},
+                                                                                       {3.0 / 6.0,  -6.0 / 6.0, 3.0 / 6.0,  0.0},
+                                                                                       {-3.0 / 6.0, 0.0 / 6.0,  3.0 / 6.0,  0.0},
+                                                                                       {1.0 / 6.0,  4.0 / 6.0,  1.0 / 6.0,  0.0}
+                                                                               }))
+                                                        });
+
                     obj.TranslationMatrix = getInterpolateTranslationMatrix(
                             current_path_time,
-                            M,
+                            blending_matrices[CONTROLL_POINT_TYPE],
                             obj.controll_points
                     );
                 }
@@ -602,7 +629,7 @@ int main(void) {
         }
 
         // When press N, change mode
-        if (glfwGetKey( window, GLFW_KEY_N ) == GLFW_PRESS){
+        if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS) {
             if (currentTime - lastChangeMode >= 0.2) {
                 mode = !mode;
             }
