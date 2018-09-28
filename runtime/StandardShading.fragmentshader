@@ -21,7 +21,7 @@ void main(){
 	// Light emission properties
 	// You probably want to put them as uniforms
 	vec3 LightColor = vec3(1,1,1);
-	float LightPower = 500.0f;
+	float LightPower = 1.0f;
 	
 	// Material properties
 	// vec3 MaterialDiffuseColor = texture( myTextureSampler, UV ).rgb;
@@ -42,7 +42,7 @@ void main(){
 	//  - light is perpendicular to the triangle -> 0
 	//  - light is behind the triangle -> 0
 	float cosTheta = clamp( dot( n,l ), 0,1 );
-	
+
 	// Eye vector (towards the camera)
 	vec3 E = normalize(EyeDirection_cameraspace);
 	// Direction in which the triangle reflects the light
@@ -53,11 +53,11 @@ void main(){
 	//  - Looking elsewhere -> < 1
 	float cosAlpha = clamp( dot( E,R ), 0,1 );
 
-	color = 
+	color = MaterialAmbientColor + MaterialDiffuseColor * LightColor * LightPower * cosTheta;
 		// Ambient : simulates indirect lighting
-		MaterialAmbientColor +
+		// MaterialAmbientColor +
 		// Diffuse : "color" of the object
-		MaterialDiffuseColor * LightColor * LightPower * cosTheta / (distance*distance) +
+		//   +
 		// Specular : reflective highlight, like a mirror
-		MaterialSpecularColor * LightColor * LightPower * pow(cosAlpha,5) / (distance*distance);
+		// MaterialSpecularColor * LightColor * LightPower * pow(cosAlpha,5) / (distance*distance);
     }
