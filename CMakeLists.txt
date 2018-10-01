@@ -25,7 +25,6 @@ add_executable(
         helper/VertexBuffer.cpp
         helper/IndexBuffer.cpp
         )
-
 target_link_libraries(playground glfw)
 target_link_libraries(playground glew)
 target_link_libraries(playground "-framework OpenGL")

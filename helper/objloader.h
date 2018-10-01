@@ -15,7 +15,8 @@ bool loadOBJ(
 	std::vector<glm::vec3> & out_vertices, 
 	std::vector<glm::vec2> & out_uvs, 
 	std::vector<glm::vec3> & out_normals,
-	float scale
+	float scale,
+	glm::vec3 position
 );
 
 #endif

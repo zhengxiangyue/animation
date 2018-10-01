@@ -29,7 +29,7 @@ GLuint LoadShaders(const char * vertex_file_path,const char * fragment_file_path
 		VertexShaderCode = sstr.str();
 		VertexShaderStream.close();
 	}else{
-	    std::cout << "File not found, the exe file should locate the same as these files" << std::endl;
+	    std::cout << vertex_file_path << ":File not found, the exe file should locate the same as these files" << std::endl;
 //		printf("Impossible to open %s. Are you in the right directory ? Don't forget to read the FAQ !\n", vertex_file_path);
 		exit(0);
 	}

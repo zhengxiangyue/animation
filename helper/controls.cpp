@@ -4,8 +4,8 @@
 // Thanks to the OpenGL tutorial http://www.opengl-tutorial.org/
 //
 
-#include "controls.h"
-using namespace glm;
+#include "../common/gl_util.h"
+#include <glm/gtc/matrix_transform.hpp>
 
 glm::mat4 ViewMatrix;
 glm::mat4 ProjectionMatrix;
@@ -71,11 +71,11 @@ void computeMatricesFromInputs(){
 
 	// Move forward
 	if (glfwGetKey( window, GLFW_KEY_W ) == GLFW_PRESS){
-		position += normalize(vec3(direction.x, 0 , direction.z)) * deltaTime * speed;
+		position += normalize(glm::vec3(direction.x, 0 , direction.z)) * deltaTime * speed;
 	}
 	// Move backward
 	if (glfwGetKey( window, GLFW_KEY_S ) == GLFW_PRESS){
-		position -= normalize(vec3(direction.x, 0, direction.z)) * deltaTime * speed;
+		position -= normalize(glm::vec3(direction.x, 0, direction.z)) * deltaTime * speed;
 	}
 	// Strafe right
 	if (glfwGetKey( window, GLFW_KEY_D ) == GLFW_PRESS){
@@ -86,7 +86,7 @@ void computeMatricesFromInputs(){
 		position -= right * deltaTime * speed;
 	}
 
-	position.y = float(-2.0);
+	position.y = float(-0.0);
 
 	float FoV = initialFoV;
 

@@ -16,7 +16,7 @@ GLuint loadBMP_custom(const char * imagepath){
 	// Open the file
 	FILE * file = fopen(imagepath,"rb");
 	if (!file){
-        std::cout << "File not found, the exe file should locate the same as these files" << std::endl;
+        std::cout << imagepath << ":File not found, the exe file should locate the same as these files" << std::endl;
 //		printf("%s could not be opened. Are you in the right directory ? Don't forget to read the FAQ !\n", imagepath);
 		exit(1);
 	}
