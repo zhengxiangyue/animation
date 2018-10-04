@@ -20,9 +20,9 @@ add_executable(
         helper/shader.cpp
         helper/controls.cpp
         helper/textureLoader.cpp
-        helper/objloader.cpp
-        helper/vboindexer.cpp
-        helper/VertexBuffer.cpp
+        helper/objLoader.cpp
+        helper/vboIndexer.cpp
+        helper/vertexBuffer.cpp
         helper/IndexBuffer.cpp
         )
 target_link_libraries(playground glfw)

@@ -153,22 +153,6 @@ glm::mat4 getInterpolateTranslationMatrix(float time, glm::mat4 M, std::vector<g
                                }));
 }
 
-glm::vec3 getInBetweenSpeed(float time, glm::mat4 M, std::vector<glm::vec4> control_points) {
-
-    int start_index = floor(time);
-    if (start_index >= control_points.size() - 3)
-        return glm::vec3(1.0);
-
-    std::cout << time << std::endl;
-
-    time = fmod(time, 1.0);
-    glm::vec4 speed = glm::vec4(3 * time * time, 2 * time, 1.0, 0.0)
-                      * M
-                      * transpose(glm::mat4(control_points[start_index], control_points[start_index + 1], control_points[start_index + 2], control_points[start_index + 3]));
-
-    return glm::normalize(glm::vec3(speed.x, speed.y, speed.z));
-}
-
 /**
  * given A and B, calculate the rotation matrix which convert A to B
  * @param start

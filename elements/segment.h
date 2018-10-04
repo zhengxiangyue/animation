@@ -137,15 +137,6 @@ public:
         return parent_transformation * T1 * local_rotate * T2;
     }
 
-    glm::vec3 getDirection(float current_time) {
-        if (control_points.size() < 4)
-            return glm::vec3(1.0);
-        float each_path_duration = 0.2;
-        float current_path_time = fmod(current_time, each_path_duration * (control_points.size() - 3)) / each_path_duration;
-
-        return getInBetweenSpeed(current_path_time, blending_matrices[0], control_points);
-    }
-
     /**
      *
      * @param current_time
@@ -164,37 +155,6 @@ public:
             control_points
         );
     }
-
-    /**
-     * T1 * R * T2
-     * @param eurler
-     * @return
-     */
-//    glm::mat4 getTransformMatrix(glm::vec3 eurler) {
-//        if (parent == nullptr)
-//            return RotationMatrix * TranslationMatrix;
-//
-//        auto parent_transform_matrix = parent->getTransformMatrix(glm::vec3(0.0, 0.0, 0.0));
-//
-//        glm::vec3 T1_vector = parent_joint_point - parent->child_joint_point;
-//
-//        glm::mat4 T1 = glm::transpose(glm::mat4({
-//                                                        {1.0, 0.0, 0.0, T1_vector.x},
-//                                                        {0.0, 1.0, 0.0, T1_vector.y},
-//                                                        {0.0, 0.0, 1.0, T1_vector.z},
-//                                                        {0.0, 0.0, 0.0, 1.0}
-//                                                }));
-//
-//        glm::mat4 T2 = glm::transpose(glm::mat4({
-//                                                        {1.0, 0.0, 0.0, -parent_joint_point.x},
-//                                                        {0.0, 1.0, 0.0, -parent_joint_point.y},
-//                                                        {0.0, 0.0, 1.0, -parent_joint_point.z},
-//                                                        {0.0, 0.0, 0.0, 1.0}
-//                                                }));
-//
-//
-//        return parent_model_matrix * T1 * expressToRotation(eurler) * T2;
-//    }
 
 };
 

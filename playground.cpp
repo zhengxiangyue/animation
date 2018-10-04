@@ -15,9 +15,9 @@
 #include "helper/shader.h"
 #include "helper/textureLoader.h"
 #include "helper/controls.h"
-#include "helper/objloader.h"
-#include "helper/vboindexer.h"
-#include "helper/VertexBuffer.h"
+#include "helper/objLoader.h"
+#include "helper/vboIndexer.h"
+#include "helper/vertexBuffer.h"
 #include "helper/IndexBuffer.h"
 
 // todo: change at runtime

@@ -1,4 +1,4 @@
-#include "objloader.h"
+#include "objLoader.h"
 
 /**
  * load obj file with vertices, normal, texture coordinate
