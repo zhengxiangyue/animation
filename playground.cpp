@@ -121,7 +121,7 @@ int main(void) {
             new hierarchical_node<vec3>(lego_ptr, "model/lego_right_leg.obj", {0.0, -0.62, 0.0}, 20.0, "texture/Bandit Texture_Low Poly (3).bmp", vec3(0.0, -0.7, 0.0), vec3(0.0, -0.7, 0.0)),
             left_arm,
             new hierarchical_node<vec3>(lego_ptr, "model/lego_right_arm.obj", {0.0, -0.62, 0.0}, 20.0, "texture/Bandit Texture_Low Poly (3).bmp", vec3(0.0, -0.5, 0.0), vec3(0.0, -0.5, 0.0)),
-            new hierarchical_node<vec3>(left_arm, "model/ak47.obj", {0.0, 2.0, 0.0}, 0.006, "texture/KFC.bmp", vec3(-0.2, -0.3, 0.0), vec3(0.0, 2.5, 0.0)),
+            new hierarchical_node<vec3>(left_arm, "model/ak47.obj", {-0.6, 2.5, -0.0}, 0.006, "texture/KFC.bmp", vec3(-0.2, -0.3, 0.0), vec3(0.0, 2.5, 0.0)),
             new hierarchical_node<vec3>(nullptr, "model/plane.obj", {0.0, -1.0, 0.0}, 1.0, "texture/uvtemplate.bmp"),
         });
 
@@ -131,6 +131,16 @@ int main(void) {
         objects[0]->control_points.push_back(vec4(20 * sin(radians(i * 1.0)), i % 2 ? 0.0 : 0.05, 20 * cos(radians(i * 1.0)), 1.0));
         objects[0]->key_rotations.push_back(vec3(radians(90.0 + i * 1.0), 0.0, 0.0));
     }
+    // body should trun a little bit while walking
+//    objects[0]->key_rotations = {
+//        vec3(0.0, radians(45.0), 0.0),
+//        vec3(0.0, 0.0, 0.0),
+//        vec3(0.0, radians(-45.0), 0.0),
+//        vec3(0.0, 0.0, 0.0),
+//        vec3(0.0, radians(45.0), 0.0),
+//        vec3(0.0, 0.0, 0.0),
+//        vec3(0.0, radians(-45.0), 0.0),
+//    };
 
     objects[1]->key_rotations = {
         vec3(0.0, radians(45.0), 0.0),
@@ -153,13 +163,10 @@ int main(void) {
     };
 
     objects[3]->key_rotations = {
-        vec3(0.0, radians(-60.0), 0.0),
-        vec3(0.0, 0.0, 0.0),
-        vec3(0.0, radians(60.0), 0.0),
-        vec3(0.0, 0.0, 0.0),
-        vec3(0.0, radians(-60.0), 0.0),
-        vec3(0.0, 0.0, 0.0),
-        vec3(0.0, radians(60.0), 0.0),
+        vec3(0.0, radians(-90.0), 0.0),
+        vec3(0.0, radians(-90.0), 0.0),
+        vec3(0.0, radians(-90.0), 0.0),
+        vec3(0.0, radians(-90.0), 0.0)
     };
 
     objects[4]->key_rotations = {
@@ -173,10 +180,10 @@ int main(void) {
     };
 
     objects[5]->key_rotations = {
-        vec3(radians(90.0), 0.0, 0.0),
-        vec3(radians(90.0), 0.0, 0.0),
-        vec3(radians(90.0), 0.0, 0.0),
-        vec3(radians(90.0), 0.0, 0.0),
+        vec3(radians(90.0), 0.0, radians(90.0)),
+        vec3(radians(90.0), 0.0, radians(90.0)),
+        vec3(radians(90.0), 0.0, radians(90.0)),
+        vec3(radians(90.0), 0.0, radians(90.0)),
     };
 
 
