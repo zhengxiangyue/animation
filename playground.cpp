@@ -31,13 +31,6 @@ GLFWwindow *window;
 // mode 0: edit mode, 1: view mode
 int mode = 1;
 
-// current modifying objef
-// it's wired since all_object declared in main...
-int selected_object_index = 0;
-
-// record all control points so as to now show them in the specific situation
-std::unordered_set<int> control_points_index;
-
 void initialGL(unsigned int &MatrixID,
                unsigned int &LightID,
                unsigned int &ViewMatrixId,
@@ -112,86 +105,29 @@ int main(void) {
     initialGL(MatrixID, LightID, ViewMatrixId, ModelMatrixID, TextureID, VertexArrayID, programID);
 
     auto lego_ptr = new hierarchical_node<vec3>(nullptr, "model/lego.obj", {0.0, -0.62, 0.0}, 20.0, "texture/Bandit Texture_Low Poly (3).bmp");
+    auto left_leg = new hierarchical_node<vec3>(lego_ptr, "model/lego_left_leg.obj", {0.0, -0.62, 0.0}, 20.0, "texture/Bandit Texture_Low Poly (3).bmp", vec3(0.0, -0.7, 0.0), vec3(0.0, -0.7, 0.0));
+    auto right_leg = new hierarchical_node<vec3>(lego_ptr, "model/lego_right_leg.obj", {0.0, -0.62, 0.0}, 20.0, "texture/Bandit Texture_Low Poly (3).bmp", vec3(0.0, -0.7, 0.0), vec3(0.0, -0.7, 0.0));
     auto left_arm = new hierarchical_node<vec3>(lego_ptr, "model/lego_left_arm.obj", {0.0, -0.62, 0.0}, 20.0, "texture/Bandit Texture_Low Poly (3).bmp", vec3(0.0, -0.5, 0.0), vec3(0.0, -0.5, 0.0));
-
+    auto right_arm = new hierarchical_node<vec3>(lego_ptr, "model/lego_right_arm.obj", {0.0, -0.62, 0.0}, 20.0, "texture/Bandit Texture_Low Poly (3).bmp", vec3(0.0, -0.5, 0.0), vec3(0.0, -0.5, 0.0));
+    auto dog = new hierarchical_node<vec3>(nullptr, "model/Hero_Dog.obj", {5.0, -1.21, 5.0}, 0.008, "texture/dog2.bmp", vec3(0.0, -0.5, 0.0), vec3(0.0, -0.5, 0.0));
     auto objects = std::vector<hierarchical_node<vec3> *>(
         {
             lego_ptr,
-            new hierarchical_node<vec3>(lego_ptr, "model/lego_left_leg.obj", {0.0, -0.62, 0.0}, 20.0, "texture/Bandit Texture_Low Poly (3).bmp", vec3(0.0, -0.7, 0.0), vec3(0.0, -0.7, 0.0)),
-            new hierarchical_node<vec3>(lego_ptr, "model/lego_right_leg.obj", {0.0, -0.62, 0.0}, 20.0, "texture/Bandit Texture_Low Poly (3).bmp", vec3(0.0, -0.7, 0.0), vec3(0.0, -0.7, 0.0)),
             left_arm,
-            new hierarchical_node<vec3>(lego_ptr, "model/lego_right_arm.obj", {0.0, -0.62, 0.0}, 20.0, "texture/Bandit Texture_Low Poly (3).bmp", vec3(0.0, -0.5, 0.0), vec3(0.0, -0.5, 0.0)),
-            new hierarchical_node<vec3>(left_arm, "model/ak47.obj", {-0.6, 2.5, -0.0}, 0.006, "texture/KFC.bmp", vec3(-0.2, -0.3, 0.0), vec3(0.0, 2.5, 0.0)),
+            right_arm,
+            left_leg,
+            right_leg,
             new hierarchical_node<vec3>(nullptr, "model/plane.obj", {0.0, -1.0, 0.0}, 1.0, "texture/uvtemplate.bmp"),
+            dog,
         });
-
-    float step = 0.5;
-
-    for (int i = 0; i < 361; ++i) {
-        objects[0]->control_points.push_back(vec4(20 * sin(radians(i * 1.0)), i % 2 ? 0.0 : 0.05, 20 * cos(radians(i * 1.0)), 1.0));
-        objects[0]->key_rotations.push_back(vec3(radians(90.0 + i * 1.0), 0.0, 0.0));
-    }
-    // body should trun a little bit while walking
-//    objects[0]->key_rotations = {
-//        vec3(0.0, radians(45.0), 0.0),
-//        vec3(0.0, 0.0, 0.0),
-//        vec3(0.0, radians(-45.0), 0.0),
-//        vec3(0.0, 0.0, 0.0),
-//        vec3(0.0, radians(45.0), 0.0),
-//        vec3(0.0, 0.0, 0.0),
-//        vec3(0.0, radians(-45.0), 0.0),
-//    };
-
-    objects[1]->key_rotations = {
-        vec3(0.0, radians(45.0), 0.0),
-        vec3(0.0, 0.0, 0.0),
-        vec3(0.0, radians(-45.0), 0.0),
-        vec3(0.0, 0.0, 0.0),
-        vec3(0.0, radians(45.0), 0.0),
-        vec3(0.0, 0.0, 0.0),
-        vec3(0.0, radians(-45.0), 0.0),
-    };
-
-    objects[2]->key_rotations = {
-        vec3(0.0, radians(-45.0), 0.0),
-        vec3(0.0, 0.0, 0.0),
-        vec3(0.0, radians(45.0), 0.0),
-        vec3(0.0, 0.0, 0.0),
-        vec3(0.0, radians(-45.0), 0.0),
-        vec3(0.0, 0.0, 0.0),
-        vec3(0.0, radians(45.0), 0.0),
-    };
-
-    objects[3]->key_rotations = {
-        vec3(0.0, radians(-90.0), 0.0),
-        vec3(0.0, radians(-90.0), 0.0),
-        vec3(0.0, radians(-90.0), 0.0),
-        vec3(0.0, radians(-90.0), 0.0)
-    };
-
-    objects[4]->key_rotations = {
-        vec3(0.0, radians(60.0), 0.0),
-        vec3(0.0, 0.0, 0.0),
-        vec3(0.0, radians(-60.0), 0.0),
-        vec3(0.0, 0.0, 0.0),
-        vec3(0.0, radians(60.0), 0.0),
-        vec3(0.0, 0.0, 0.0),
-        vec3(0.0, radians(-60.0), 0.0),
-    };
-
-    objects[5]->key_rotations = {
-        vec3(radians(90.0), 0.0, radians(90.0)),
-        vec3(radians(90.0), 0.0, radians(90.0)),
-        vec3(radians(90.0), 0.0, radians(90.0)),
-        vec3(radians(90.0), 0.0, radians(90.0)),
-    };
-
 
     // For speed computation
     double lastTime = glfwGetTime();
     double lastFrameTime = lastTime,
         lastChangeMainObjectTime = lastTime,
         lastChangeMode = lastTime,
+        last_press_space = lastTime,
+        last_press_up = lastTime - 0.8,
         lastAddcontrolPoint = lastTime;
     int nbFrames = 0;
 
@@ -208,16 +144,110 @@ int main(void) {
         // Clear the screen
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Compute the MVP matrix from keyboard and mouse input
-        computeMatricesFromInputs();
+        // press up to move legs and arms, each motion take 0.8 seconds
+        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS && current_time - last_press_up > 0.8) {
+            lego_ptr->actions.push_back(action<glm::vec3>(current_time, {
+                vec4(0.0, 0.0, 0.0, 1.0),
+                vec4(0.0, 0.0, 0.0, 1.0),
+                vec4(0.0, 0.08, 0.0, 1.0),
+                vec4(0.0, 0.0, 0.0, 1.0),
+                vec4(0.0, 0.08, 0.0, 1.0),
+                vec4(0.0, 0.0, 0.0, 1.0),
+                vec4(0.0, 0.0, 0.0, 1.0),
+            }, {}));
+            // First key and last key will be ignored, 0.8 is each duration(0.2) * numbers(4)
+            left_leg->actions.push_back(action<glm::vec3>(current_time, {}, {
+                vec3(0.0, radians(45.0), 0.0),
+                vec3(0.0, 0.0, 0.0),
+                vec3(0.0, radians(-45.0), 0.0),
+                vec3(0.0, 0.0, 0.0),
+                vec3(0.0, radians(45.0), 0.0),
+                vec3(0.0, 0.0, 0.0),
+                vec3(0.0, radians(-45.0), 0.0),
+            }));
+            left_arm->actions.push_back(action<glm::vec3>(current_time, {}, {
+                vec3(0.0, radians(-45.0), 0.0),
+                vec3(0.0, 0.0, 0.0),
+                vec3(0.0, radians(45.0), 0.0),
+                vec3(0.0, 0.0, 0.0),
+                vec3(0.0, radians(-45.0), 0.0),
+                vec3(0.0, 0.0, 0.0),
+                vec3(0.0, radians(45.0), 0.0),
+            }));
+            right_leg->actions.push_back(action<glm::vec3>(current_time, {}, {
+                vec3(0.0, radians(-45.0), 0.0),
+                vec3(0.0, 0.0, 0.0),
+                vec3(0.0, radians(45.0), 0.0),
+                vec3(0.0, 0.0, 0.0),
+                vec3(0.0, radians(-45.0), 0.0),
+                vec3(0.0, 0.0, 0.0),
+                vec3(0.0, radians(45.0), 0.0),
+            }));
+            right_arm->actions.push_back(action<glm::vec3>(current_time, {}, {
+                vec3(0.0, radians(45.0), 0.0),
+                vec3(0.0, 0.0, 0.0),
+                vec3(0.0, radians(-45.0), 0.0),
+                vec3(0.0, 0.0, 0.0),
+                vec3(0.0, radians(45.0), 0.0),
+                vec3(0.0, 0.0, 0.0),
+                vec3(0.0, radians(-45.0), 0.0),
+            }));
+            last_press_up = current_time;
+        }
+
+        // press space to jump
+        if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS && current_time - last_press_space > 0.8) {
+            if (lego_ptr->actions.size() > 0)
+                lego_ptr->actions.erase(lego_ptr->actions.begin());
+            lego_ptr->actions.push_back(action<glm::vec3>(current_time, {
+                vec4(0.0, 0.0, 0.0, 1.0),
+                vec4(0.0, 0.0, 0.0, 1.0),
+                vec4(0.0, 0.3, 0.0, 1.0),
+                vec4(0.0, 0.5, 0.0, 1.0),
+                vec4(0.0, 0.3, 0.0, 1.0),
+                vec4(0.0, 0.0, 0.0, 1.0),
+                vec4(0.0, 0.0, 0.0, 1.0),
+            }, {}));
+            last_press_space = current_time;
+        }
+
+        if (current_time - last_press_up < 0.8) {
+            // get current direction
+            glm::vec4 current_direction = lego_ptr->current_rotation * normalize(vec4(0.0, 0.0, 1.0, 1.0));
+            lego_ptr->current_translation[3][0] += 0.06 * current_direction[0];
+            lego_ptr->current_translation[3][1] += 0.06 * current_direction[1];
+            lego_ptr->current_translation[3][2] += 0.06 * current_direction[2];
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+            // get current direction
+            lego_ptr->current_rotation = expressToRotation(getQuatFromIntuition(3.0, vec3(0.0, 1.0, 0.0))) * lego_ptr->current_rotation;
+        }
+
+        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+            // get current direction
+            lego_ptr->current_rotation = expressToRotation(getQuatFromIntuition(-3.0, vec3(0.0, 1.0, 0.0))) * lego_ptr->current_rotation;
+        }
+
+//         computeMatricesFromInputs();
+        computeMatricesFromCharacter(lego_ptr->current_translation, lego_ptr->current_rotation);
         glm::mat4 projection_matrix = getProjectionMatrix();
         glm::mat4 view_matrix = getViewMatrix();
+
+        // Compute the MVP matrix from keyboard and mouse input
 
         glm::vec3 lightPos = glm::vec3(14, 14, 14);
         glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
         glUniformMatrix4fv(ViewMatrixId, 1, GL_FALSE, &view_matrix[0][0]);
 
         for (int i = 0; i < objects.size(); ++i) {
+
+            // check the actions
+            auto removing = std::remove_if(objects[i]->actions.begin(), objects[i]->actions.end(), [current_time](action<glm::vec3> _action) {
+                    return current_time > _action.end_time;
+            });
+            if (objects[i]->actions.size() > 0 && removing != objects[i]->actions.end())
+                objects[i]->actions.erase(removing);
 
             glm::mat4 model_matrix;
 

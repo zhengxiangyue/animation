@@ -18,9 +18,7 @@ add_executable(
         playground
         playground.cpp
         helper/shader.cpp
-        helper/controls.cpp
         helper/textureLoader.cpp
-        helper/objLoader.cpp
         helper/vboIndexer.cpp
         helper/vertexBuffer.cpp
         helper/IndexBuffer.cpp

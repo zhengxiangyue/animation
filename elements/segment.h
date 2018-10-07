@@ -8,6 +8,22 @@
 #include <vector>
 #include "rigid_object.h"
 
+template<typename _rotation_type>
+class action {
+public:
+    float start_time;
+    float end_time;
+
+    std::vector<glm::vec4> control_points;
+    std::vector<_rotation_type> key_rotations;
+
+    action(float current_time, std::vector<glm::vec4> _control_points, std::vector<_rotation_type> _key_rotations): control_points(_control_points), key_rotations(_key_rotations){
+        start_time = current_time;
+        end_time = current_time + 0.2 * (glm::max(control_points.size(), key_rotations.size()) - 3);
+    }
+
+};
+
 std::vector<glm::mat4> blending_matrices(
     {
         // Catmull-Rom
@@ -62,12 +78,22 @@ public:
      * If this is a child node, it shouldn't have
      * any control_points
      */
-    std::vector<glm::vec4> control_points;
+    std::vector<action<_rotation_type>> actions;
 
     /**
      * Decide the rotation of the key frames
      */
     std::vector<_rotation_type> key_rotations;
+
+    /**
+     *
+     */
+    glm::mat4 current_translation;
+
+    /**
+     *
+     */
+    glm::mat4 current_rotation;
 
     /**
      *
@@ -86,7 +112,8 @@ public:
         float scale = 1.0,
         const char *texture_path = "",
         glm::vec3 parent_joint = glm::vec3(0.0, 0.0, 0.0),
-        glm::vec3 child_joint = glm::vec3(0.0, 0.0, 0.0)) : polygon_object(path, position, scale, texture_path) {
+        glm::vec3 child_joint = glm::vec3(0.0, 0.0, 0.0),
+        glm::vec4 quat = getQuatFromIntuition(0.0, glm::vec3(1.0, 0.0, 0.0))) : polygon_object(path, position, scale, texture_path, quat) {
 
         parent_ptr = parent;
         parent_joint_point = parent_joint;
@@ -113,13 +140,21 @@ public:
      * @return
      */
     glm::mat4 getRotationMatrix(float current_time) {
-        if (key_rotations.size() < 4)
-            return glm::mat4(1.0);
         float each_rotation_duration = 0.2;
-        auto _keys = key_rotations;
-        _keys.erase(_keys.begin()), _keys.erase(_keys.end() - 1);
-        float current_rotation_time = fmod(current_time, each_rotation_duration * (_keys.size() - 1)) / each_rotation_duration;
-        return expressToRotation(getInterpolateExpress<_rotation_type>(current_rotation_time, _keys));
+
+        // If this is a root node, the movement is based on the key input, we should always return the global rotation
+        // If not, we should return the locaol rotation
+
+        glm::mat4 _rotation = glm::mat4(1.0);
+        for (auto each:actions) {
+            auto _keys = each.key_rotations;
+            if (_keys.size() < 4) continue;
+            current_time -= each.start_time;
+            _keys.erase(_keys.begin()), _keys.erase(_keys.end() - 1);
+            float current_rotation_time = fmod(current_time, each_rotation_duration * (_keys.size() - 1)) / each_rotation_duration;
+            _rotation = expressToRotation(getInterpolateExpress<_rotation_type>(current_rotation_time, _keys)) * _rotation;
+        }
+        return _rotation;
     }
 
     /**
@@ -131,7 +166,7 @@ public:
      */
     glm::mat4 getTransformationMatrix(float current_time) {
         if (parent_ptr == nullptr)
-            return getTranslationMatrix(current_time) * getRotationMatrix(current_time);
+            return getTranslationMatrix(current_time) * getRotationMatrix(current_time) * current_translation * current_rotation;
         auto parent_transformation = parent_ptr->getTransformationMatrix(current_time);
         auto local_rotate = getRotationMatrix(current_time);
         return parent_transformation * T1 * local_rotate * T2;
@@ -143,19 +178,24 @@ public:
      * @return
      */
     glm::mat4 getTranslationMatrix(float current_time) {
-
-        if (control_points.size() < 4)
-            return glm::mat4(1.0);
         float each_path_duration = 0.2;
-        float current_path_time = fmod(current_time, each_path_duration * (control_points.size() - 3)) / each_path_duration;
+        glm::mat4 _translation(1.0);
+        for (auto each: actions) {
+            if (each.control_points.size() < 4)
+                continue;
+            float current_path_time = fmod(current_time - each.start_time, each_path_duration * (each.control_points.size() - 3)) / each_path_duration;
+            auto _each_translate = getInterpolateTranslationMatrix(
+                current_path_time,
+                blending_matrices[0],
+                each.control_points
+            );
+            _translation = _each_translate * _translation;
+        }
 
-        return getInterpolateTranslationMatrix(
-            current_path_time,
-            blending_matrices[0],
-            control_points
-        );
+        return _translation;
     }
-
 };
+
+
 
 #endif //ANIMATION_SEGMENT_H

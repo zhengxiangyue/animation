@@ -34,9 +34,10 @@ public:
             const char *path,
             glm::vec3 position,
             float scale = 1.0,
-            const char *texture_path = ""
+            const char *texture_path = "",
+            glm::vec4 init_quat = getQuatFromIntuition(0.0, glm::vec3(1.0, 0.0, 0.0))
     ) {
-        loadOBJ(path, vertices, uvs, normals, scale, position);
+        loadOBJ(path, vertices, uvs, normals, scale, position, init_quat);
         indexVBO(vertices, uvs, normals, indices, indexed_vertices, indexed_uvs, indexed_normals);
 
         vb = new VertexBuffer(&indexed_vertices[0], indexed_vertices.size() * sizeof(glm::vec3));
