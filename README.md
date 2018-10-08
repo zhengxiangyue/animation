@@ -1,3 +1,5 @@
+#### [Demo](https://zhengxiangyue.github.io/animation/) 
+
 ### Build
 
 ```bash
@@ -14,7 +16,7 @@ $ make
 $ ./playground
 ```
 
-### Basic keys
+## On branch master - key framing interpolation
 
 #### W, A, S, D and mouse
 
@@ -23,8 +25,6 @@ Controll the camera position
 #### N
 
 Change mode, when red object occurs, you are in "Edit mode", otherwise you are in "View mode"
-
-### Edit mode keys
 
 #### M
 
@@ -50,5 +50,5 @@ Rotate the object
 
 Euler angles, quaternian, Catmul-Rom or B-splines is changed in code
 
-[Demo](https://zhengxiangyue.github.io/animation/) 
 ![readme](./static/readme.png)
+
