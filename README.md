@@ -1,5 +1,3 @@
-#### [Demo](https://zhengxiangyue.github.io/animation/) 
-
 ### Build
 
 ```bash
@@ -29,6 +27,8 @@ Lego rotate(culmysily)
 #### Space
 
 Lego jump(culmysily)
+
+[Demo](https://zhengxiangyue.github.io/animation/) 
 
 ![readme](./static/legoAnimation.png)
 
