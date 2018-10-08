@@ -1,5 +1,3 @@
-#### [Demo](https://zhengxiangyue.github.io/animation/) 
-
 ### Build
 
 ```bash
@@ -49,6 +47,8 @@ Rotate the object
 ### Ohter
 
 Euler angles, quaternian, Catmul-Rom or B-splines is changed in code
+
+[Demo](https://zhengxiangyue.github.io/animation/) 
 
 ![readme](./static/readme.png)
 
