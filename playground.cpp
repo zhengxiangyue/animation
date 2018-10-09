@@ -234,8 +234,6 @@ int main(void) {
         glm::mat4 projection_matrix = getProjectionMatrix();
         glm::mat4 view_matrix = getViewMatrix();
 
-        // Compute the MVP matrix from keyboard and mouse input
-
         glm::vec3 lightPos = glm::vec3(14, 14, 14);
         glUniform3f(LightID, lightPos.x, lightPos.y, lightPos.z);
         glUniformMatrix4fv(ViewMatrixId, 1, GL_FALSE, &view_matrix[0][0]);
