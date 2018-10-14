@@ -107,11 +107,13 @@ void computeMatricesFromInputs(){
 
 void computeMatricesFromCharacter(glm::mat4 translation, glm::mat4 rotation) {
 
-    position.x = translation[3][0] + 4.0;
-    position.y = translation[3][1] + 2.0;
-    position.z = translation[3][2] + 4.0;
+    float _x = 0.0, _y = 1.0, _z = -4.0;
 
-    auto direction = glm::normalize(glm::vec3(-4.0, -2.0, -4.0));
+    position.x = translation[3][0] + _x;
+    position.y = translation[3][1] + _y;
+    position.z = translation[3][2] + _z;
+
+    auto direction = glm::normalize(glm::vec3(-_x, -_y, -_z));
     ProjectionMatrix = glm::perspective(glm::radians(initialFoV), 4.0f / 3.0f, 0.1f, 100.0f);
     ViewMatrix = glm::lookAt(
         position,           // Camera is here

@@ -17,9 +17,13 @@ public:
     std::vector<glm::vec4> control_points;
     std::vector<_rotation_type> key_rotations;
 
-    action(float current_time, std::vector<glm::vec4> _control_points, std::vector<_rotation_type> _key_rotations): control_points(_control_points), key_rotations(_key_rotations){
+    action(float current_time, std::vector<glm::vec4> _control_points, std::vector<_rotation_type> _key_rotations, bool repeat=false): control_points(_control_points), key_rotations(_key_rotations){
         start_time = current_time;
-        end_time = current_time + 0.2 * (glm::max(control_points.size(), key_rotations.size()) - 3);
+        if (!repeat) {
+            end_time = current_time + 0.2 * (glm::max(control_points.size(), key_rotations.size()) - 3);
+        } else {
+            end_time = current_time - 0.1;
+        }
     }
 
 };
