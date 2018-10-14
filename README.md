@@ -2,6 +2,7 @@
 
 ```bash
 $ git clone https://github.com/Zhengxiangyue/animation.git
+$ git checkout 1.0.1
 $ cd animation/runtime
 $ cmake ..
 ```
@@ -11,24 +12,25 @@ $ make
 ```
 
 ```bash
+$ python ./motion_detection.py
 $ ./playground
 ```
 
-## On branch 1.0.0 - textured animation
+## On branch 1.0.1 - Facial motion control
 
-#### Up
+#### Turning head left
 
-Lego move forward(culmysily)
+Lego move left
 
-#### Left/Right
+#### Turning head right
 
-Lego rotate(culmysily)
+Lego move right
 
-#### Space
+#### Turning head up
 
-Lego jump(culmysily)
+Lego jump
 
-[Demo](https://zhengxiangyue.github.io/animation/) 
+[Demo](https://zhengxiangyue.github.io/animation/motion/) 
 
-![readme](./static/legoAnimation.png)
+![readme](./static/motionControl.png)
 

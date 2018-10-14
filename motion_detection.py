@@ -55,16 +55,6 @@ while True:
                 last_x = each_point[0]
                 last_y = each_point[1]
 
-
-
-
-                # small_frame[each_point[1]][each_point[0]] = [255, 255, 255]
-                # small_frame[each_point[1]][each_point[0] + 1] = [255, 255, 255]
-                # small_frame[each_point[1] + 1][each_point[0]] = [255, 255, 255]
-                # small_frame[each_point[1] + 1][each_point[0] + 1] = [255, 255, 255]
-
-
-
     # Display the resulting image
     cv2.imshow('Video', small_frame)
 
