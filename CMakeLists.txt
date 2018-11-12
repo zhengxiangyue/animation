@@ -1,13 +1,12 @@
-cmake_minimum_required(VERSION 3.8)
-project(animation)
+cmake_minimum_required(VERSION 3.12)
+project(XQ)
+
+set(CMAKE_CXX_STANDARD 14)
 
 find_package(glfw3 REQUIRED)
 find_package(glew REQUIRED)
 find_package(glm REQUIRED)
 find_package(OpenCV REQUIRED)
-
-set(CMAKE_CXX_STANDARD 14)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
 
 include_directories(
         external/glfw-3.1.2/include/
@@ -16,19 +15,40 @@ include_directories(
 )
 
 add_executable(
-        playground
-        playground.cpp
-        helper/shader.cpp
-        helper/textureLoader.cpp
-        helper/vboIndexer.cpp
-        helper/vertexBuffer.cpp
-        helper/IndexBuffer.cpp
-        )
-target_link_libraries(playground glfw)
-target_link_libraries(playground glew)
-target_link_libraries(playground "-framework OpenGL")
+        XQ
+        main.cpp
+        src/helper/shader.cpp
+        src/object/buffer_object.cpp
+        src/helper/texture.cpp
+        src/helper/vbo_indexer.cpp
+)
+target_link_libraries(XQ glfw)
+target_link_libraries(XQ glew)
+target_link_libraries(XQ "-framework OpenGL")
 
-set(USE_AVX_INSTRUCTIONS ON CACHE BOOL "Use AVX instructions")
-add_subdirectory(/Users/zhengxiangyue/Projects/dlib dlib_build)
-add_executable(face_recognation face_recognation.cpp)
-target_link_libraries(face_recognation dlib::dlib ${OpenCV_LIBS})
+add_executable(
+        KeyFraming
+        keyframing.cpp
+        src/helper/shader.cpp
+        src/object/buffer_object.cpp
+        src/helper/texture.cpp
+        src/helper/vbo_indexer.cpp
+)
+target_link_libraries(KeyFraming glfw)
+target_link_libraries(KeyFraming glew)
+target_link_libraries(KeyFraming "-framework OpenGL")
+
+add_executable(
+        Physics
+        physics.cpp
+        src/helper/shader.cpp
+        src/object/buffer_object.cpp
+        src/helper/texture.cpp
+        src/helper/vbo_indexer.cpp
+)
+target_link_libraries(Physics glfw)
+target_link_libraries(Physics glew)
+target_link_libraries(Physics "-framework OpenGL")
+
+
+
