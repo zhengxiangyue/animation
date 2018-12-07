@@ -25,16 +25,16 @@ using namespace glm;
 
 void update_velocity_after_contact(glm::vec3 normalized_contact_normal, rigid_object *object) {
     glm::vec3 normal_velocity = (object->current_velocity * normalized_contact_normal) * normalized_contact_normal;
-    glm::vec3 perpen_velocity = object->current_velocity - normal_velocity;
+    glm::vec3 parent_velocity = object->current_velocity - normal_velocity;
 
     normal_velocity = -0.6f * normal_velocity;
-    object->current_velocity = normal_velocity + perpen_velocity;
+    object->current_velocity = normal_velocity + parent_velocity;
 
-    glm::vec3 axis = glm::cross(perpen_velocity, normal_velocity);
+    glm::vec3 axis = glm::cross(parent_velocity, normal_velocity);
     object->current_angular_velocity = {-axis.x, -axis.y, -axis.z, glm::length(glm::vec3(object->current_velocity.x, 0.0, object->current_velocity.z))};
 };
 
-const float initial_dieire = 50.0;
+const float initial_desire = 50.0;
 
 const float initial_speed = 100.0;
 
@@ -134,20 +134,6 @@ glm::vec3 calculateCenter(std::vector<Boid*> all) {
     return result;
 }
 
-//void updateBasedOnDesiredDirection(Boid *each, float deltaTime) {
-//
-//    // collision avoidance
-//    glm::vec3 direction = fly_center - glm::vec3(each->current_translation[3][0], each->current_translation[3][1], each->current_translation[3][2]);
-//    float distance = glm::length(direction);
-//    if ( distance < avoid_distance) {
-//        glm::vec3 desire((20.0f / (distance * distance)) * glm::normalize(direction));
-//        each->current_velocity += desire;
-//    }
-//
-//    // flocking center
-//
-//}
-
 int main(void) {
     // Initialise GLFW
     if (!glfwInit()) {
@@ -161,9 +147,8 @@ int main(void) {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // To make MacOS happy; should not be needed
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
     // Open a window and create its OpenGL context
-    window = glfwCreateWindow(1024, 768, "Key framing animation", NULL, NULL);
+    window = glfwCreateWindow(1920, 1080, "Key framing animation", NULL, NULL);
     if (window == NULL) {
         fprintf(stderr, "Failed to open GLFW window. If you have an Intel GPU, they are not 3.3 compatible. Try the 2.1 version of the tutorials.\n");
         getchar();
