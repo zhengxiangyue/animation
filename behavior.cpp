@@ -4,6 +4,7 @@
 #include <iostream>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <cstdlib>
 
 GLFWwindow *window;
 
@@ -34,6 +35,9 @@ void update_velocity_after_contact(glm::vec3 normalized_contact_normal, rigid_ob
 };
 
 const float initial_dieire = 50.0;
+
+const float initial_speed = 100.0;
+
 glm::vec3 fly_center(0.0, 10.0, 0.0);
 
 /**
@@ -47,13 +51,19 @@ public:
     glm::vec3 desire;
 
     // when other boid enter this range, check if there is a desire to veer
-    float influnce_radius = 10.0;
+    float influnce_radius = 200.0;
 
     // if other boid is heading to a direction which penetrate this sphere, desire is effected
-    float boundry_radius = 5.0;
+    float boundry_radius = 100.0;
 
     // max speed of the boid
-    float upper_speed = 20.0;
+    float upper_speed = 5.0;
+
+    //
+    float avoidFactor = 100.0f;
+
+    //
+    float centerFactor = 20.0f;
 
     Boid(simpleBufferPackage *package) : rigid_object(package) {
     }
@@ -78,7 +88,7 @@ public:
         if (distance * distance - k_length * k_length > this->boundry_radius * this->boundry_radius)
             return;
 
-        glm::vec3 current_desire = (1.0f / (distance * distance)) * glm::normalize(k - link_vec);
+        glm::vec3 current_desire = avoidFactor * (1.0f / (distance * distance)) * glm::normalize(k - link_vec);
 
         boid->current_velocity += current_desire * deltaTime;
 
@@ -90,7 +100,7 @@ public:
 
     void flyToPosition(glm::vec3 position, float deltaTime) {
 
-        glm::vec3 current_desire = 20.0f * glm::normalize(position - this->getVec3Translation());
+        glm::vec3 current_desire = centerFactor * glm::normalize(position - this->getVec3Translation());
         this->current_velocity += current_desire * deltaTime;
         float current_speed = glm::length(this->current_velocity);
         if (current_speed > this->upper_speed) {
@@ -100,6 +110,29 @@ public:
     }
 
 };
+
+// 缘起缘灭， 一切自有定数
+class Predator: public Boid {
+public:
+    Predator(simpleBufferPackage *package) : Boid(package) {
+    }
+};
+
+glm::vec3 calculateCenter(std::vector<Boid*> all) {
+
+    if (all.size() == 1) return glm::vec3(0.0, 100.0, 0.0);
+
+    glm::vec3 result = glm::vec3(0.0, 0.0, 0.0);
+    int i = 0;
+    for (i = 0 ; i < all.size() ; ++i) {
+        result += all[i]->getVec3Translation();
+    }
+    result = (1.0f / float(all.size())) * result;
+
+    if (result.y <= 20.0) result.y = 20.0;
+
+    return result;
+}
 
 //void updateBasedOnDesiredDirection(Boid *each, float deltaTime) {
 //
@@ -192,11 +225,6 @@ int main(void) {
 
     auto airplane_package = loadSimpleObjFileToIndexedBuffer("model/Mig29.obj", glm::mat4(0.01));
 
-    auto air_plane = new Boid(airplane_package);
-    air_plane->setTexture("texture/KFC.bmp");
-    air_plane->current_translation[3][1] += 20;
-    air_plane->current_velocity = glm::vec3(0.1, 0.0, 0.0);
-
     auto plane = new rigid_object(plane_package);
     plane->setTexture("uvtemplate.bmp");
 
@@ -221,18 +249,17 @@ int main(void) {
     wall4->current_translation[3][0] = -100;
 
     std::vector<rigid_object *> fixed_objects = {
-//        plane,
+        plane,
         wall1,
         wall2,
         wall3,
         wall4,
     };
 
-    std::vector<rigid_object *> ball_objects = {
+    std::vector<Predator *> ball_objects = {
     };
 
     std::vector<Boid *> airplanes = {
-        air_plane,
     };
 
 
@@ -389,6 +416,8 @@ int main(void) {
             }
         }
 
+        glm::vec3 center = calculateCenter(airplanes);
+
         // boids
         for (auto each:airplanes) {
 
@@ -397,7 +426,11 @@ int main(void) {
                 if (each == other) continue;
                 each->avoidCollision(other, deltaTime);
             }
-            each->flyToPosition(glm::vec3(0.0, 0.0, 0.0), deltaTime);
+
+            each->flyToPosition(center, deltaTime);
+
+            // head always to velocity direction
+            each->current_rotation_in_quaternion = getQuatFromTwoVec3(glm::vec3(0.0, 0.0, -1.0), glm::normalize(each->current_velocity));
 
             glm::mat4 ModelMatrix = each->current_translation * quaternionToRotation(each->current_rotation_in_quaternion);
             glm::mat4 MVP = ProjectionMatrix * ViewMatrix * ModelMatrix;
@@ -420,6 +453,11 @@ int main(void) {
         }
 
         for (auto each:ball_objects) {
+
+            // airplane is afriad of balls
+            for (auto other:airplanes) {
+                each->avoidCollision(other, deltaTime);
+            }
 
             // move the object based on the velocity and then draw
 
@@ -445,10 +483,18 @@ int main(void) {
             position = position + 1.5f * direction;
 
             // get current direction
-            auto new_ball = new rigid_object(ball_package);
+            auto new_ball = new Predator(ball_package);
+            new_ball->influnce_radius *= 2;
+            new_ball->boundry_radius *= 2;
+            new_ball->avoidFactor *= 5;
             new_ball->current_translation[3] = {position.x, position.y, position.z, 1.0};
             new_ball->setTexture("texture/dog2.bmp");
             new_ball->current_velocity = 30.0f * camera->getDirection();
+
+            new_ball->current_angular_velocity[0] = (float(rand() % 10) + 1) / 10.0f;
+            new_ball->current_angular_velocity[1] = (float(rand() % 10) + 1) / 10.0f;
+            new_ball->current_angular_velocity[2] = (float(rand() % 10) + 1) / 10.0f;
+            new_ball->current_angular_velocity[3] = float(rand() % 5) + 2;
 
             ball_objects.push_back(new_ball);
 
@@ -466,7 +512,7 @@ int main(void) {
             auto airplane = new Boid(airplane_package);
             airplane->current_translation[3] = {position.x, position.y, position.z, 1.0};
             airplane->setTexture("texture/KFC.bmp");
-            airplane->current_velocity = 30.0f * camera->getDirection();
+            airplane->current_velocity = initial_speed * camera->getDirection();
 
             airplanes.push_back(airplane);
 

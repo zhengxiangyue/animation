@@ -25,6 +25,10 @@ glm::vec4 getQuatFromIntuition(float degree, glm::vec3 axis) {
     return glm::vec4(axis.x * hsar, axis.y * hsar, axis.z * hsar, cos(glm::radians(degree / 2)));
 }
 
+glm::vec4 getQuatFromTwoVec3(glm::vec3 start, glm::vec3 dest) {
+    return getQuatFromIntuition(glm::degrees(glm::angle(start, dest)), glm::cross(start, dest));
+}
+
 /**
  * quat multiplication
  * @param q1

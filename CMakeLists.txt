@@ -15,30 +15,6 @@ include_directories(
 )
 
 add_executable(
-        XQ
-        main.cpp
-        src/helper/shader.cpp
-        src/object/buffer_object.cpp
-        src/helper/texture.cpp
-        src/helper/vbo_indexer.cpp
-)
-target_link_libraries(XQ glfw)
-target_link_libraries(XQ glew)
-target_link_libraries(XQ "-framework OpenGL")
-
-add_executable(
-        KeyFraming
-        keyframing.cpp
-        src/helper/shader.cpp
-        src/object/buffer_object.cpp
-        src/helper/texture.cpp
-        src/helper/vbo_indexer.cpp
-)
-target_link_libraries(KeyFraming glfw)
-target_link_libraries(KeyFraming glew)
-target_link_libraries(KeyFraming "-framework OpenGL")
-
-add_executable(
         Physics
         physics.cpp
         src/helper/shader.cpp
@@ -49,6 +25,19 @@ add_executable(
 target_link_libraries(Physics glfw)
 target_link_libraries(Physics glew)
 target_link_libraries(Physics "-framework OpenGL")
+
+add_executable(
+        Behavior
+        behavior.cpp
+        src/helper/shader.cpp
+        src/object/buffer_object.cpp
+        src/helper/texture.cpp
+        src/helper/vbo_indexer.cpp
+)
+target_link_libraries(Behavior glfw)
+target_link_libraries(Behavior glew)
+target_link_libraries(Behavior "-framework OpenGL")
+
 
 
 
