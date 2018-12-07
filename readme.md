@@ -1,4 +1,4 @@
-[Demo] https://zhengxiangyue.github.io/animation/
+[Demo] https://www.youtube.com/watch?v=25nLcl4vyYY
 
 ## Build
 ```shell
@@ -7,7 +7,5 @@ git checkout 1.0.2
 cd animation/runtime
 cmake ..
 make
-```
-```shell
-./behavior
+./physics
 ```
